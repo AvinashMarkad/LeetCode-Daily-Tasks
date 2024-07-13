@@ -1,0 +1,49 @@
+/**
+ * @param {number[]} positions
+ * @param {number[]} healths
+ * @param {string} directions
+ * @return {number[]}
+ */
+var survivedRobotsHealths = function(positions, healths, directions) {
+    let n = positions.length;
+    let robots = [];
+
+    for (let i = 0; i < n; i++) {
+        robots.push({
+            pos: positions[i],
+            health: healths[i],
+            direction: directions[i],
+            originalIndex: i
+        });
+    }
+
+    robots.sort((a, b) => a.pos - b.pos);
+
+    let stack = [];
+    let survivors = Array(n).fill(null);
+
+    for (let robot of robots) {
+        if (robot.direction === 'R') {
+            stack.push(robot);
+        } else {
+            while (stack.length > 0 && stack[stack.length - 1].health < robot.health) {
+                robot.health -= 1;
+                stack.pop();
+            }
+            if (stack.length > 0 && stack[stack.length - 1].health === robot.health) {
+                stack.pop();
+            } else if (stack.length > 0) {
+                stack[stack.length - 1].health -= 1;
+            } else {
+                survivors[robot.originalIndex] = robot.health;
+            }
+        }
+    }
+
+    while (stack.length > 0) {
+        let survivingRobot = stack.pop();
+        survivors[survivingRobot.originalIndex] = survivingRobot.health;
+    }
+
+    return survivors.filter(health => health !== null);
+};

@@ -1,0 +1,60 @@
+/**
+ * @param {string} formula
+ * @return {string}
+ */
+var countOfAtoms = function(formula) {
+    // Helper function to check if a character is a digit
+    function isDigit(char) {
+        return char >= '0' && char <= '9';
+    }
+
+    // Initialize the stack and the main element count object
+    let stack = [];
+    let elementCount = {};
+    let i = 0;
+    let n = formula.length;
+
+    while (i < n) {
+        if (formula[i] === '(') {
+            // Push the current count to the stack and start a new count scope
+            stack.push(elementCount);
+            elementCount = {};
+            i++;
+        } else if (formula[i] === ')') {
+            // Handle the closing parenthesis and potential multiplier
+            let iStart = ++i;
+            while (i < n && isDigit(formula[i])) i++;
+            let multiplicativeFactor = iStart < i ? parseInt(formula.slice(iStart, i)) : 1;
+
+            // Merge current count with the count from the stack
+            let previousElementCount = stack.pop();
+            for (let element in elementCount) {
+                if (previousElementCount[element] === undefined) {
+                    previousElementCount[element] = 0;
+                }
+                previousElementCount[element] += elementCount[element] * multiplicativeFactor;
+            }
+            elementCount = previousElementCount;
+        } else {
+            // Handle the element and its count
+            let iStart = i++;
+            while (i < n && formula[i] >= 'a' && formula[i] <= 'z') i++;
+            let element = formula.slice(iStart, i);
+            iStart = i;
+            while (i < n && isDigit(formula[i])) i++;
+            let count = iStart < i ? parseInt(formula.slice(iStart, i)) : 1;
+            if (elementCount[element] === undefined) {
+                elementCount[element] = 0;
+            }
+            elementCount[element] += count;
+        }
+    }
+
+    // Sort the elements alphabetically and construct the result string
+    let sortedElements = Object.keys(elementCount).sort();
+    let result = "";
+    for (let element of sortedElements) {
+        result += element + (elementCount[element] > 1 ? elementCount[element] : "");
+    }
+    return result;
+};

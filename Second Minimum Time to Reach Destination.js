@@ -6,42 +6,42 @@
  * @return {number}
  */
 var secondMinimum = function(n, edges, time, change) {
-    // Create adjacency list for the graph
-    const adj = Array.from({ length: n + 1 }, () => []);
-    for (const [u, v] of edges) {
-        adj[u].push(v);
-        adj[v].push(u);
+    // Create an adjacency list from the edges
+    let adjList = Array.from({ length: n + 1 }, () => []);
+    for (let [u, v] of edges) {
+        adjList[u].push(v);
+        adjList[v].push(u);
     }
-
-    // Initialize the first and second minimum time arrays
-    const first = Array(n + 1).fill(Infinity);
-    const second = Array(n + 1).fill(Infinity);
-    first[1] = 0; // Start at node 1 with time 0
-
-    // BFS Queue: [node, totalTime]
-    const queue = [[1, 0]];
     
-    while (queue.length) {
-        const [currentNode, currentTime] = queue.shift();
+    // Define the two shortest times to reach each node
+    let first = Array(n + 1).fill(Infinity);
+    let second = Array(n + 1).fill(Infinity);
+    first[1] = 0;
+    
+    // BFS Queue with [currentNode, currentTime]
+    let queue = [[1, 0]];
+    
+    while (queue.length > 0) {
+        let [node, currTime] = queue.shift();
         
-        for (const neighbor of adj[currentNode]) {
-            // Calculate the time to reach the neighbor
-            let arrivalTime = currentTime + time;
-            if (Math.floor(arrivalTime / change) % 2 === 1) {
-                // If arriving during red signal, wait for it to turn green
-                arrivalTime += change - (arrivalTime % change);
+        for (let neighbor of adjList[node]) {
+            let newTime = currTime + time;
+            
+            // Calculate the waiting time if needed
+            if (Math.floor(currTime / change) % 2 === 1) {
+                newTime = (Math.floor(currTime / change) + 1) * change + time;
             }
-
-            if (arrivalTime < first[neighbor]) {
+            
+            if (newTime < first[neighbor]) {
                 second[neighbor] = first[neighbor];
-                first[neighbor] = arrivalTime;
-                queue.push([neighbor, arrivalTime]);
-            } else if (arrivalTime > first[neighbor] && arrivalTime < second[neighbor]) {
-                second[neighbor] = arrivalTime;
-                queue.push([neighbor, arrivalTime]);
+                first[neighbor] = newTime;
+                queue.push([neighbor, newTime]);
+            } else if (newTime > first[neighbor] && newTime < second[neighbor]) {
+                second[neighbor] = newTime;
+                queue.push([neighbor, newTime]);
             }
         }
     }
-
+    
     return second[n];
 };
